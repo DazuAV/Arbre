@@ -1,47 +1,43 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>  
 
-#include "IDENTITE.h"
+#include "identite.h"
+
+#define MAX_PERSONNES 100
 
 int main() {
-  // Création d'une identité
-  tIdentite identite = IdentiteCreer(16, "DUFF", "John", 'M', "13/12/2001");
+  
+    tIdentite personnes[MAX_PERSONNES];
+    int nbPersonnes = 0;
 
-  // Vérification de l'identifiant
-  if (IdentiteIdentifiant(identite) != 16) {
-    printf("Erreur : l'identifiant est incorrect\n");
-    return 1;
-  }
+    FILE *personne;
+    personne = fopen("personne.ind", "rt");
+    if (personne == NULL) {
+        perror("fichier");
+        return 1;
+    }
 
-  // Vérification du nom
-  if (strcmp(IdentiteNom(identite), "DUFF") != 0) {
-    printf("Erreur : le nom est incorrect\n");
-    return 1;
-  }
+    tIdentite currentPerson = IdentiteLiref(personne);
+    while (currentPerson != NULL && nbPersonnes < MAX_PERSONNES) {
+        personnes[nbPersonnes++] = currentPerson;
+        currentPerson = IdentiteLiref(personne);
+    }
 
-  // Vérification du prénom
-  if (strcmp(IdentitePrenom(identite), "John") != 0) {
-    printf("Erreur : le prénom est incorrect\n");
-    return 1;
-  }
+    /* Fermeture du fichier */
+    fclose(personne);
 
-  // Vérification du sexe
-  if (IdentiteSexe(identite) != 'M') {
-    printf("Erreur : le sexe est incorrect\n");
-    return 1;
-  }
+    // Maintenant, vous avez toutes les identités dans le tableau 'personnes'
+    
+    // Exemple d'affichage de toutes les identités
+    for (int i = 0; i < nbPersonnes; ++i) {
+        IdentiteAfficher(personnes[i]);
+    }
 
-  // Vérification de la date de naissance
-  if (strcmp(IdentiteDateNaissance(identite), "13/12/2001") != 0) {
-    printf("Erreur : la date de naissance est incorrecte\n");
-    return 1;
-  }
+    // Libérez la mémoire allouée pour chaque identité
+    for (int i = 0; i < nbPersonnes; ++i) {
+        IdentiteLiberer(personnes[i]);
+    }
 
-  // Affichage de l'identité
-  IdentiteAfficher(identite);
-
-  // Libération de l'identité
-  IdentiteLiberer(identite);
-
-  return 0;
+    return 0;
 }

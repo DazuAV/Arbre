@@ -2,6 +2,8 @@
 #define TESTIDENTITE_H
 
 #include <stdio.h>
+#include <stdlib.h>
+
 
 #define LG_DATE 10
 #define LG_NOM 10
@@ -34,6 +36,8 @@ char IdentiteSexe(tIdentite Identite);
 void IdentiteAfficher(tIdentite Identite);
 
 void IdentiteLiberer(tIdentite Identite);
+
+tIdentite IdentiteLiref(FILE *f);
 
 
 #endif

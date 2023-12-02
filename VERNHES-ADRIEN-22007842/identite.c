@@ -2,7 +2,7 @@
 #include <stdlib.h>  
 #include <string.h>  
 
-#include "IDENTITE.h" 
+#include "identite.h" 
 
 
 tIdentite IdentiteCreer(int Id, char *Nom, char *Prenom, char Sexe, char DateNais[]) {
@@ -10,6 +10,7 @@ tIdentite IdentiteCreer(int Id, char *Nom, char *Prenom, char Sexe, char DateNai
   tIdentite identite = malloc(sizeof(struct sIdentite));
   if (identite == NULL) {
     return NULL;
+    
   }
 
   // Allocation des chaînes de caractères
@@ -100,61 +101,54 @@ void IdentiteLiberer(tIdentite Identite) {
 #define MAX_LINE_LENGTH 80
 
 static tIdentite IdentiteLireLigne(FILE *f) {
-  // Déclaration des variables
+
   int identifiant;
   char nom[LG_NOM + 1];
   char prenom[LG_PRENOM + 1];
   char sexe;
   char date_naissance[LG_DATE + 1];
 
-  // Lecture de l'identifiant
   if (fscanf(f, "%d", &identifiant) != 1) {
     return NULL;
   }
 
-  // Lecture du nom
   if (fgets(nom, MAX_LINE_LENGTH, f) == NULL) {
     return NULL;
   }
   removeNewline(nom);
 
-  // Lecture du prénom
+ 
   if (fgets(prenom, MAX_LINE_LENGTH, f) == NULL) {
     return NULL;
   }
   removeNewline(prenom);
 
-  // Lecture du sexe
   if (fscanf(f, " %c", &sexe) != 1) {
     return NULL;
   }
 
-  // Lecture de la date de naissance
   if (fgets(date_naissance, MAX_LINE_LENGTH, f) == NULL) {
     return NULL;
   }
   removeNewline(date_naissance);
 
-  // Création de l'identité
   tIdentite identite = IdentiteCreer(identifiant, nom, prenom, sexe, date_naissance);
 
-  // Retour de l'identité
   return identite;
 }
 
 tIdentite IdentiteLiref(FILE *f) {
-  // Lecture de la première ligne
   tIdentite identite = IdentiteLireLigne(f);
 
-  // Tant qu’il y a des informations à lire
+
   while (identite != NULL) {
-    // Retour de l’identité
+  
     return identite;
 
-    // Lecture de la ligne suivante
+    
     identite = IdentiteLireLigne(f);
   }
 
-  // Retour de NULL
+  
   return NULL;
 }
