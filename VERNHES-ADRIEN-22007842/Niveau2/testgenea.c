@@ -3,40 +3,39 @@
 #include <string.h>
 #include "genea.h"
 
-int main() {
-    // Création d'un arbre
-    tArbre monArbre = ArbreCreer();
+int main(int argc, char *argv[]) {
+  if (3!=argc ) {
+    fprintf(stderr, "Erreur : nombre d'arguments incorrect.\n");
+    return 1;
+  }
 
-    // Lire les personnes à partir du fichier
-    tArbre personnes = ArbreLirePersonnesFichier("personnes.txt");
-    if (personnes == NULL) {
-        printf("Erreur lors de la lecture des personnes.\n");
-        return 1;
-    }
+  // Création de l'arbre et lecture des personnes
+  tArbre arbre = ArbreLirePersonnesFichier(argv[1]);
+  if (arbre == NULL) {
+    fprintf(stderr, "Erreur lors de la lecture des personnes.\n");
+    return 1;
+  }
 
-    printf("Personnes lues depuis le fichier :\n");
-    ArbreAfficher(personnes);
+  FILE *f = fopen(argv[2], "r");
+  if (NULL==f) {
+    fprintf(stderr, "Erreur d'ouverture du fichier de liens de parenté.\n");
+    ArbreLiberer(arbre);
+    return 1;
+  }
 
-    // Ajouter des liens de parenté à partir du fichier
-    tArbre parents = ArbreLireLienParenteFichier(personnes, "liens_parente.txt");
-    if (parents == NULL) {
-        printf("Erreur lors de la lecture des liens de parenté.\n");
-        return 1;
-    }
+  // Lecture des liens de parenté
+  int idEnfant, idParent;
+  char parente;
 
-    printf("\nArbre avec les liens de parenté ajoutés :\n");
-    ArbreAfficher(parents);
+  while (ArbreLireLienParentef(f, &idEnfant, &idParent, &parente) == 1) {
+    ArbreAjouterLienParente(arbre, idEnfant, idParent, parente);
+  }
 
-    // Exemple d'ajout de lien de parenté directement
-    ArbreAjouterLienParente(parents, 1, 2, 'P'); // Ajoute le lien : enfant avec ID 1, parent avec ID 2, type de parenté P (père)
+  fclose(f);
 
-    printf("\nArbre après ajout manuel de lien de parenté :\n");
-    ArbreAfficher(parents);
+  printf("Arbre avec liens de parenté :\n");
+  ArbreAfficher(arbre);
+  ArbreLiberer(arbre);
 
-    // Libérer la mémoire
-    ArbreLiberer(monArbre);
-    ArbreLiberer(personnes);
-    ArbreLiberer(parents);
-
-    return 0;
+  return 0;
 }

@@ -6,10 +6,14 @@
 #include <string.h>
 
 #define LG_DATE 10
+#define LG_NOM 10
+#define LG_PRENOM 10
 
+struct sArbre {
+    struct sFiche *pPremiere;
+    struct sFiche *pDerniere;
+};
 
-
-// Structure de l'identité
 struct tIdentite {
     int Identifiant;
     char *Nom;
@@ -20,10 +24,6 @@ struct tIdentite {
 
 
 
-struct sArbre {
-    struct sFiche *pPremiere;
-    struct sFiche *pDerniere;
-};
 
 struct sFiche {
     struct tIdentite Identite; 
@@ -34,7 +34,6 @@ struct sFiche {
 
 typedef struct sArbre *tArbre;
 typedef struct sFiche *tFiche;
-
 tArbre ArbreCreer(void);
 void ArbreAfficher(tArbre Arbre);
 void ArbreAjouterPersonne(tArbre Arbre, struct tIdentite Identite);
@@ -42,6 +41,7 @@ void ArbreLiberer(tArbre Arbre);
 tArbre ArbreLirePersonnesFichier(char Fichier[]);
 void ArbreAjouterLienParente(tArbre Arbre, int IdEnfant, int IdParent, char Parente);
 int ArbreLireLienParentef(FILE *f, int *pIdEnfant, int *pIdParent, char *pParente);
+
 tArbre ArbreLireLienParenteFichier(tArbre Arbre, char Fichier[]);
 
-#endif  // GENEA_H
+#endif 
