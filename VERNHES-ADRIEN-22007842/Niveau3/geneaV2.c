@@ -5,7 +5,7 @@
 // Déclaration anticipée de struct tIdentite
 struct tIdentite;
 
-#include "genea.h"
+#include "geneaV2.h"
 
 
 tArbre ArbreCreer(void){
@@ -206,4 +206,152 @@ tArbre ArbreLireLienParenteFichier(tArbre Arbre, char Fichier[]) {
     return Arbre;
 
 
+}
+
+void ArbreEcrireGV(tArbre Arbre, char Fichier[]) {
+    FILE *fichier = fopen(Fichier, "w");
+    
+    if (fichier == NULL) {
+        fprintf(stderr, "Erreur d'ouverture du fichier pour écriture.\n");
+        return;
+    }
+
+    // Écriture de l'en-tête du fichier DOT
+    fprintf(fichier, "digraph {\n");
+    fprintf(fichier, "rankdir = \"BT\";\n\n");
+    fprintf(fichier, "node [shape = box, fontname = \"Arial\", fontsize = 10];\n");
+
+    // Parcours de l'arbre pour écrire les nœuds
+    for (struct sFiche *fiche = Arbre->pPremiere; fiche != NULL; fiche = fiche->pSuivante) {
+        const char *couleur = (fiche->Identite.Sexe == 'F') ? "green" : "blue";
+        fprintf(fichier, "%d [label = \"%s\\n%s\\n%s\", color = %s];\n", fiche->Identite.Identifiant,
+                fiche->Identite.Nom, fiche->Identite.Prenom, fiche->Identite.DateNaissance, couleur);
+    }
+
+    // Écriture du style des flèches avec la couleur jc0
+    fprintf(fichier, "\nedge [arrowhead = jc0, color = \"#000000\"];\n");
+
+    // Parcours de l'arbre pour écrire les arcs
+    for (struct sFiche *fiche = Arbre->pPremiere; fiche != NULL; fiche = fiche->pSuivante) {
+        if (fiche->pPere != NULL) {
+            fprintf(fichier, "%d -> %d;\n", fiche->Identite.Identifiant, fiche->pPere->Identite.Identifiant);
+        }
+
+        if (fiche->pMere != NULL) {
+            fprintf(fichier, "%d -> %d;\n", fiche->Identite.Identifiant, fiche->pMere->Identite.Identifiant);
+        }
+    }
+
+    // Écriture de la clôture du fichier DOT 
+    fprintf(fichier, "}\n");
+
+    fclose(fichier);
+}
+
+
+void afficherIndentation(int niveau) {
+    for (int i = 0; i < niveau; i++) {
+        printf("\t");
+    }
+}
+
+struct sFiche *rechercherPersonne(tArbre Arbre, int Identifiant) {
+    for (struct sFiche *fiche = Arbre->pPremiere; fiche != NULL; fiche = fiche->pSuivante) {
+        if (fiche->Identite.Identifiant == Identifiant) {
+            return fiche;
+        }
+    }
+    return NULL;
+}
+
+void afficherAscendantsRecursive(struct sFiche *personne, int niveau) {
+    if (personne != NULL) {
+        afficherIndentation(niveau);
+        printf("[%d] %s %s, %c, %s\n", personne->Identite.Identifiant, personne->Identite.Nom,
+               personne->Identite.Prenom, personne->Identite.Sexe, personne->Identite.DateNaissance);
+
+        if (personne->pPere != NULL) {
+            afficherIndentation(niveau);
+            printf("Père : ");
+            afficherAscendantsRecursive(personne->pPere, niveau + 1);
+        }
+
+        if (personne->pMere != NULL) {
+            afficherIndentation(niveau);
+            printf("Mère : ");
+            afficherAscendantsRecursive(personne->pMere, niveau + 1);
+        }
+    }
+}
+
+void ArbreAfficherAscendants(tArbre Arbre, int Identifiant) {
+    struct sFiche *personne = rechercherPersonne(Arbre, Identifiant);
+
+    if (personne == NULL) {
+        fprintf(stderr, "La personne d'identifiant %d n'est pas présente dans l'arbre.\n", Identifiant);
+    } else {
+        printf("Arbre ascendant de %s %s :\n", personne->Identite.Prenom, personne->Identite.Nom);
+        afficherAscendantsRecursive(personne, 0);
+    }
+}
+
+void ArbreEcrireAscendantsGVRec(FILE *fichier, struct sFiche *personne, int niveau) {
+    if (personne == NULL) {
+        return;
+    }
+
+    // Écriture du nœud
+    const char *couleur = (personne->Identite.Sexe == 'F') ? "green" : "blue";
+    fprintf(fichier, "%d [label = \"%s\\n%s\\n%s\", color = %s];\n", personne->Identite.Identifiant,
+            personne->Identite.Nom, personne->Identite.Prenom, personne->Identite.DateNaissance, couleur);
+
+    // Écriture des liens avec les parents
+    if (personne->pPere != NULL) {
+        fprintf(fichier, "%d -> %d;\n", personne->Identite.Identifiant, personne->pPere->Identite.Identifiant);
+        // Appel récursif pour le père
+        ArbreEcrireAscendantsGVRec(fichier, personne->pPere, niveau + 1);
+    }
+
+    if (personne->pMere != NULL) {
+        fprintf(fichier, "%d -> %d;\n", personne->Identite.Identifiant, personne->pMere->Identite.Identifiant);
+        // Appel récursif pour la mère
+        ArbreEcrireAscendantsGVRec(fichier, personne->pMere, niveau + 1);
+    }
+}
+
+void ArbreEcrireAscendantsGV(tArbre Arbre, int Identifiant, char Fichier[]) {
+    FILE *fichier = fopen(Fichier, "w");
+    if (fichier == NULL) {
+        fprintf(stderr, "Erreur d'ouverture du fichier pour écriture.\n");
+        return;
+    }
+
+    // Écriture de l'en-tête du fichier DOT
+    fprintf(fichier, "digraph {\n");
+    fprintf(fichier, "rankdir = \"BT\";\n\n");
+    fprintf(fichier, "node [shape = box, fontname = \"Arial\", fontsize = 10];\n");
+
+    // Recherche de la personne par identifiant dans l'arbre
+    struct sFiche *personne = NULL;
+    for (struct sFiche *fiche = Arbre->pPremiere; fiche != NULL; fiche = fiche->pSuivante) {
+        if (fiche->Identite.Identifiant == Identifiant) {
+            personne = fiche;
+            break;
+        }
+    }
+
+    // Vérification de l'existence de la personne dans l'arbre
+    if (personne == NULL) {
+        fprintf(stderr, "Identifiant non trouvé dans l'arbre.\n");
+        fclose(fichier);
+        return;
+    }
+
+    // Appel récursif pour écrire les nœuds et les liens
+    ArbreEcrireAscendantsGVRec(fichier, personne, 0);
+
+    // Écriture de la clôture du fichier DOT
+    fprintf(fichier, "}\n");
+
+    fclose(fichier);
 }

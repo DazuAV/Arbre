@@ -1,0 +1,16 @@
+digraph {
+rankdir = "BT";
+
+node [shape = box, fontname = "Arial", fontsize = 10];
+4 [label = "CHARLOT\nJean-Louis\n09/05/1945", color = blue];
+4 -> 8;
+8 [label = "CHARLOT\nJacques\n08/04/1900", color = blue];
+8 -> 17;
+17 [label = "LAFONT\nMarie\n13/10/1869", color = green];
+4 -> 9;
+9 [label = "DUBOURG\nCatherine\n21/08/1904", color = green];
+9 -> 18;
+18 [label = "DUBOURG\nJean\n21/07/1866", color = blue];
+9 -> 19;
+19 [label = "COURBIN\nMarthe\n22/04/1872", color = green];
+}

@@ -1,5 +1,5 @@
-#ifndef GENEA_H
-#define GENEA_H
+#ifndef GENEAV2_H
+#define GENEAV2_H
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -44,5 +44,8 @@ int ArbreLireLienParentef(FILE *f, int *pIdEnfant, int *pIdParent, char *pParent
 
 tArbre ArbreLireLienParenteFichier(tArbre Arbre, char Fichier[]);
 
+void ArbreEcrireGV(tArbre Arbre, char Fichier[]);
+void ArbreAfficherAscendants(tArbre Arbre, int Identifiant);
+void ArbreEcrireAscendantsGV(tArbre Arbre, int Identifiant, char Fichier[]);
 
 #endif 

@@ -1,10 +1,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "genea.h"
+#include "geneaV2.h"
 
 int main(int argc, char *argv[]) {
-  if (3!=argc ) {
+  if (4!=argc ) {
     fprintf(stderr, "Erreur : nombre d'arguments incorrect.\n");
     return 1;
   }
@@ -33,9 +33,12 @@ int main(int argc, char *argv[]) {
 
   fclose(f);
 
- 
-  printf("Arbre avec liens de parenté :\n");
-  ArbreAfficher(arbre);
+ // Appel à ArbreEcrireGV pour générer le fichier DOT
+    ArbreEcrireGV(arbre, argv[3]);
+
+    printf("Arbre avec liens de parenté :\n");
+    ArbreAfficher(arbre);
+
   ArbreLiberer(arbre);
 
   return 0;

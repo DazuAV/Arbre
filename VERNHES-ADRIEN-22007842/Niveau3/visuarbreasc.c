@@ -1,10 +1,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "genea.h"
+#include "geneaV2.h"
 
 int main(int argc, char *argv[]) {
-  if (3!=argc ) {
+  if (5!=argc ) {
     fprintf(stderr, "Erreur : nombre d'arguments incorrect.\n");
     return 1;
   }
@@ -33,10 +33,24 @@ int main(int argc, char *argv[]) {
 
   fclose(f);
 
- 
-  printf("Arbre avec liens de parenté :\n");
-  ArbreAfficher(arbre);
-  ArbreLiberer(arbre);
+ // Appel à ArbreEcrireGV pour générer le fichier DOT
+    ArbreEcrireGV(arbre, argv[4]);
 
-  return 0;
+    printf("Arbre avec liens de parenté :\n");
+    ArbreAfficher(arbre);
+    printf("                                              \n");
+
+    // atoi permet convertir char argv[3] en entier identifiant
+    int IDPersonne = atoi(argv[3]);
+
+    printf("\nArbre ascendant de la personne d'identifiant %d :\n", IDPersonne);
+    ArbreAfficherAscendants(arbre, IDPersonne);
+
+    ArbreEcrireAscendantsGV(arbre, IDPersonne, "ascendants.dot");
+
+    printf("\nArbre ascendant de la personne d'identifiant %d écrit dans ascendants.dot.\n", IDPersonne);
+
+    ArbreLiberer(arbre);
+
+    return 0;
 }
