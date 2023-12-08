@@ -208,31 +208,51 @@ tArbre ArbreLireLienParenteFichier(tArbre Arbre, char Fichier[]) {
 
 }
 
+
+
+/**
+    Écrit les nœuds de l'arbre généalogique dans un fichier DOT.
+    fichier est Le fichier dans lequel écrire les nœuds.
+    premiereFiche est La première fiche de l'arbre.
+    */
+void EcrireNoeuds(FILE* fichier, struct sFiche* premiereFiche) {
+    for (struct sFiche* fiche = premiereFiche; fiche != NULL; fiche = fiche->pSuivante) {
+        // Détermination de la couleur en fonction du sexe
+        const char* couleur = (fiche->Identite.Sexe == 'F') ? "green" : "blue";
+
+        // Écriture des informations du nœud dans le fichier DOT
+        fprintf(fichier, "%d [label = \"%s\\n%s\\n%s\", color = %s];\n",
+                fiche->Identite.Identifiant, fiche->Identite.Nom, fiche->Identite.Prenom,
+                fiche->Identite.DateNaissance, couleur);
+    }
+}
+
+/**
+     Écrit l'arbre généalogique dans un fichier DOT.
+    Arbre L'arbre généalogique.
+    Fichier Le nom du fichier DOT à générer.
+ */
 void ArbreEcrireGV(tArbre Arbre, char Fichier[]) {
-    FILE *fichier = fopen(Fichier, "w");
-    
+    FILE* fichier = fopen(Fichier, "w");
+
     if (fichier == NULL) {
         fprintf(stderr, "Erreur d'ouverture du fichier pour écriture.\n");
         return;
     }
 
-    // Écriture de l'en-tête du fichier DOT
+    //Debut du fichier DOT
     fprintf(fichier, "digraph {\n");
     fprintf(fichier, "rankdir = \"BT\";\n\n");
     fprintf(fichier, "node [shape = box, fontname = \"Arial\", fontsize = 10];\n");
 
-    // Parcours de l'arbre pour écrire les nœuds
-    for (struct sFiche *fiche = Arbre->pPremiere; fiche != NULL; fiche = fiche->pSuivante) {
-        const char *couleur = (fiche->Identite.Sexe == 'F') ? "green" : "blue";
-        fprintf(fichier, "%d [label = \"%s\\n%s\\n%s\", color = %s];\n", fiche->Identite.Identifiant,
-                fiche->Identite.Nom, fiche->Identite.Prenom, fiche->Identite.DateNaissance, couleur);
-    }
+    // Fonction auxiliaire pour écrire les nœuds
+    EcrireNoeuds(fichier, Arbre->pPremiere);
 
-    // Écriture du style des flèches avec la couleur jc0
+    // Style des flèches avec type jc0
     fprintf(fichier, "\nedge [arrowhead = jc0, color = \"#000000\"];\n");
 
-    // Parcours de l'arbre pour écrire les arcs
-    for (struct sFiche *fiche = Arbre->pPremiere; fiche != NULL; fiche = fiche->pSuivante) {
+    // Chemin de l'arbre pour écrire les arcs
+    for (struct sFiche* fiche = Arbre->pPremiere; fiche != NULL; fiche = fiche->pSuivante) {
         if (fiche->pPere != NULL) {
             fprintf(fichier, "%d -> %d;\n", fiche->Identite.Identifiant, fiche->pPere->Identite.Identifiant);
         }
@@ -242,83 +262,103 @@ void ArbreEcrireGV(tArbre Arbre, char Fichier[]) {
         }
     }
 
-    // Écriture de la clôture du fichier DOT 
+    //fin du fichier DOT
     fprintf(fichier, "}\n");
 
     fclose(fichier);
 }
 
 
+
+
+// Méthode responsable de la création d'une indentation selon le niveau fourni
 void afficherIndentation(int niveau) {
     for (int i = 0; i < niveau; i++) {
         printf("\t");
     }
 }
 
-struct sFiche *rechercherPersonne(tArbre Arbre, int Identifiant) {
-    for (struct sFiche *fiche = Arbre->pPremiere; fiche != NULL; fiche = fiche->pSuivante) {
-        if (fiche->Identite.Identifiant == Identifiant) {
-            return fiche;
-        }
-    }
-    return NULL;
-}
-
+// Méthode récursive dédiée à la présentation élégante des ascendants d'une personne
 void afficherAscendantsRecursive(struct sFiche *personne, int niveau) {
+    // Vérifie si la personne spécifiée existe
     if (personne != NULL) {
+            // Présente de manière détaillée les informations sur la personne actuelle
         afficherIndentation(niveau);
-        printf("[%d] %s %s, %c, %s\n", personne->Identite.Identifiant, personne->Identite.Nom,
+        printf("[%d] %s %s, Sexe: %c, Naissance: %s\n", personne->Identite.Identifiant, personne->Identite.Nom,
                personne->Identite.Prenom, personne->Identite.Sexe, personne->Identite.DateNaissance);
 
+        // Présente les détails sur le père, le cas échéant
         if (personne->pPere != NULL) {
             afficherIndentation(niveau);
             printf("Père : ");
+            // Appel récursif pour exposer les ancêtres paternels
             afficherAscendantsRecursive(personne->pPere, niveau + 1);
         }
 
+        // Présente les détails sur la mère, le cas échéant
         if (personne->pMere != NULL) {
             afficherIndentation(niveau);
             printf("Mère : ");
+        // Effectue un appel récursif pour exposer les ancêtres maternels
             afficherAscendantsRecursive(personne->pMere, niveau + 1);
         }
     }
 }
 
+// Méthode destinée à présenter les ascendants d'une personne donnée dans la structure généalogique
 void ArbreAfficherAscendants(tArbre Arbre, int Identifiant) {
-    struct sFiche *personne = rechercherPersonne(Arbre, Identifiant);
+    struct sFiche *personne = NULL;
 
+    // Recherche la personne via son identifiant au sein de la structure généalogique
+    for (struct sFiche *fiche = Arbre->pPremiere; fiche != NULL; fiche = fiche->pSuivante) {
+        if (fiche->Identite.Identifiant == Identifiant) {
+            personne = fiche;
+            break;
+        }
+    }
+
+// Assure la vérification de l'existence de la personne dans la structure généalogique
     if (personne == NULL) {
-        fprintf(stderr, "La personne d'identifiant %d n'est pas présente dans l'arbre.\n", Identifiant);
+        fprintf(stderr, "Erreur : Aucune personne trouvée avec l'identifiant %d dans l'arbre.\n", Identifiant);
     } else {
+// Prépare l'affichage de l'introduction pour les ancêtres de la personne désignée
         printf("Arbre ascendant de %s %s :\n", personne->Identite.Prenom, personne->Identite.Nom);
+// Déclenche l'appel récursif pour présenter les ascendants
         afficherAscendantsRecursive(personne, 0);
     }
 }
 
+
+
+
+// Fonction récursive dédiée à la génération d'un arbre ascendant au format Graphviz
 void ArbreEcrireAscendantsGVRec(FILE *fichier, struct sFiche *personne, int niveau) {
+    // Si la personne est nulle
     if (personne == NULL) {
-        return;
+        return; 
     }
 
-    // Écriture du nœud
+    // Écriture du nœud actuel dans le fichier Graphviz
     const char *couleur = (personne->Identite.Sexe == 'F') ? "green" : "blue";
     fprintf(fichier, "%d [label = \"%s\\n%s\\n%s\", color = %s];\n", personne->Identite.Identifiant,
             personne->Identite.Nom, personne->Identite.Prenom, personne->Identite.DateNaissance, couleur);
 
     // Écriture des liens avec les parents
+    // Récursif pour la mère & père
     if (personne->pPere != NULL) {
         fprintf(fichier, "%d -> %d;\n", personne->Identite.Identifiant, personne->pPere->Identite.Identifiant);
-        // Appel récursif pour le père
         ArbreEcrireAscendantsGVRec(fichier, personne->pPere, niveau + 1);
     }
-
     if (personne->pMere != NULL) {
         fprintf(fichier, "%d -> %d;\n", personne->Identite.Identifiant, personne->pMere->Identite.Identifiant);
-        // Appel récursif pour la mère
+        
         ArbreEcrireAscendantsGVRec(fichier, personne->pMere, niveau + 1);
     }
 }
 
+
+
+// Fonction pour générer un fichier au format Graphviz représentant les ascendants d'une personne
 void ArbreEcrireAscendantsGV(tArbre Arbre, int Identifiant, char Fichier[]) {
     FILE *fichier = fopen(Fichier, "w");
     if (fichier == NULL) {
@@ -326,10 +366,12 @@ void ArbreEcrireAscendantsGV(tArbre Arbre, int Identifiant, char Fichier[]) {
         return;
     }
 
-    // Écriture de l'en-tête du fichier DOT
+    // Debut du fichier DOT
     fprintf(fichier, "digraph {\n");
     fprintf(fichier, "rankdir = \"BT\";\n\n");
     fprintf(fichier, "node [shape = box, fontname = \"Arial\", fontsize = 10];\n");
+
+    fprintf(fichier, "\nedge [arrowhead = jc0, color = \"#000000\"];\n");
 
     // Recherche de la personne par identifiant dans l'arbre
     struct sFiche *personne = NULL;
@@ -340,7 +382,6 @@ void ArbreEcrireAscendantsGV(tArbre Arbre, int Identifiant, char Fichier[]) {
         }
     }
 
-    // Vérification de l'existence de la personne dans l'arbre
     if (personne == NULL) {
         fprintf(stderr, "Identifiant non trouvé dans l'arbre.\n");
         fclose(fichier);
@@ -350,8 +391,8 @@ void ArbreEcrireAscendantsGV(tArbre Arbre, int Identifiant, char Fichier[]) {
     // Appel récursif pour écrire les nœuds et les liens
     ArbreEcrireAscendantsGVRec(fichier, personne, 0);
 
-    // Écriture de la clôture du fichier DOT
     fprintf(fichier, "}\n");
 
     fclose(fichier);
 }
+

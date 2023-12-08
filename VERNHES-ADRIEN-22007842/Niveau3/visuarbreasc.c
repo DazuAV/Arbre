@@ -33,7 +33,7 @@ int main(int argc, char *argv[]) {
 
   fclose(f);
 
- // Appel à ArbreEcrireGV pour générer le fichier DOT
+ // ArbreEcrireGV permet de crer le fichier DOT
     ArbreEcrireGV(arbre, argv[4]);
 
     printf("Arbre avec liens de parenté :\n");
