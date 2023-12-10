@@ -46,6 +46,7 @@ tArbre ArbreLireLienParenteFichier(tArbre Arbre, char Fichier[]);
 
 void ArbreEcrireGV(tArbre Arbre, char Fichier[]);
 void ArbreAfficherAscendants(tArbre Arbre, int Identifiant);
+
 void ArbreEcrireAscendantsGV(tArbre Arbre, int Identifiant, char Fichier[]);
 
 #endif 
